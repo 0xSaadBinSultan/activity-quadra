@@ -1,0 +1,16 @@
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+signing.properties
+*.apk
+*.aab
+dist/
+*.idsig
+.env
+.env.*
+*oauth*.json
+*credentials*.json
+*token*.json
+client_secret*.json

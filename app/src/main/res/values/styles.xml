@@ -1,0 +1,10 @@
+<resources>
+ <color name="app_background">#10151F</color>
+ <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+  <item name="android:fontFamily">sans</item><item name="android:colorAccent">#A8BAFF</item>
+  <item name="android:windowBackground">@color/app_background</item><item name="android:statusBarColor">@color/app_background</item><item name="android:navigationBarColor">@color/app_background</item>
+  <item name="android:windowLightStatusBar">false</item><item name="android:windowActionModeOverlay">true</item>
+ </style>
+ <string name="widget_refresh">Refresh public activity</string>
+ <string name="widget_open">Open activity details and settings</string>
+</resources>
