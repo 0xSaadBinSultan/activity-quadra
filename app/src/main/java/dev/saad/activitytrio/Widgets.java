@@ -57,7 +57,7 @@ public final class Widgets {
             if(data!=null)views.setImageViewBitmap(graph,Graphs.bitmap(data,width,height,density));else views.setImageViewBitmap(graph,(Bitmap)null);
             if(!all)views.setTextViewText(R.id.widget_status,status(context,provider,data));
         }
-        if(all)views.setTextViewText(R.id.widget_status,Store.configured(context)?"Tap a graph for date details · TryHackMe is a manual snapshot":"Open Activity Trio → Profiles to get started");
+        if(all)views.setTextViewText(R.id.widget_status,Store.configured(context)?"Tap a graph for date details · TryHackMe is a manual snapshot":"Open Activity Quadra → Profiles to get started");
         return views;
     }
     @android.annotation.TargetApi(31)

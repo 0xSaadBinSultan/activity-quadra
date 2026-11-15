@@ -1,12 +1,12 @@
-# Activity Trio
+# Activity Quadra
 
 **GitHub, Codeforces, TryHackMe and LeetCode activity on your Android home screen.**
 
 A lightweight, ad-free native Java app with a combined **4-in-1** widget and four
 individual widgets. Android 8.0+; target API 35. No WebView, account tokens or analytics.
 
-[Download the APK](https://github.com/0xSaadBinSultan/activity-trio/releases/latest)
- · [Report an issue](https://github.com/0xSaadBinSultan/activity-trio/issues)
+[Download the APK](https://github.com/0xSaadBinSultan/activity-quadra/releases/latest)
+ · [Report an issue](https://github.com/0xSaadBinSultan/activity-quadra/issues)
  · [MIT license](LICENSE)
 
 <img src="docs/combined-widget.png" alt="Synthetic demonstration of the four-service widget" width="380">
@@ -16,12 +16,12 @@ and no bundled activity**. TryHackMe uses a manually imported, dated snapshot.
 
 ## Install and configure
 
-1. Install `ActivityTrio-v1.1.0.apk` from Releases and open Activity Trio.
+1. Install `ActivityQuadra-v1.1.1.apk` from Releases and open Activity Quadra.
 2. The first launch asks for **your public usernames**. Enter at least one;
    leave services you do not use blank. No login, Google account or API key is needed.
 3. The timezone defaults to your device timezone. Year `0` follows the current year.
 4. Choose **Add widget → All four together**, or pick an individual service.
-   If pinning is unavailable, long-press Home → Widgets → Activity Trio.
+   If pinning is unavailable, long-press Home → Widgets → Activity Quadra.
 5. Long-press the widget to resize it. Tap a graph for date details; tap a square,
    pinch to zoom, or use **Choose date** in the app.
 

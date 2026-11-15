@@ -17,7 +17,7 @@ if [[ ! -f "$signing_dir/release.jks" ]]; then
     fi
     "$JAVA_HOME/bin/keytool" -genkeypair -keystore "$signing_dir/release.jks" -storetype PKCS12 \
         -alias activity-trio -keyalg RSA -keysize 3072 -validity 10000 \
-        -dname 'CN=Activity Trio, OU=Personal Apps' \
+        -dname 'CN=Activity Quadra, OU=Personal Apps' \
         -storepass:file "$signing_dir/password" -keypass:file "$signing_dir/password"
 fi
 [[ -f "$signing_dir/password" ]] || { echo 'Missing local signing-password file.' >&2; exit 1; }
@@ -26,8 +26,8 @@ tools_dir="$ANDROID_HOME/build-tools/35.0.0"
 "$tools_dir/zipalign" -f -p 4 "$project_dir/app/build/outputs/apk/release/app-release-unsigned.apk" "$project_dir/dist/aligned.apk"
 "$tools_dir/apksigner" sign --ks "$signing_dir/release.jks" --ks-key-alias activity-trio \
     --ks-pass "file:$signing_dir/password" \
-    --out "$project_dir/dist/ActivityTrio-v1.1.0.apk" "$project_dir/dist/aligned.apk"
-"$tools_dir/apksigner" verify --verbose "$project_dir/dist/ActivityTrio-v1.1.0.apk"
+    --out "$project_dir/dist/ActivityQuadra-v1.1.1.apk" "$project_dir/dist/aligned.apk"
+"$tools_dir/apksigner" verify --verbose "$project_dir/dist/ActivityQuadra-v1.1.1.apk"
 rm -- "$project_dir/dist/aligned.apk"
-(cd -- "$project_dir/dist" && sha256sum ActivityTrio-v1.1.0.apk > ActivityTrio-v1.1.0.apk.sha256)
-printf 'Signed APK: %s\n' "$project_dir/dist/ActivityTrio-v1.1.0.apk"
+(cd -- "$project_dir/dist" && sha256sum ActivityQuadra-v1.1.1.apk > ActivityQuadra-v1.1.1.apk.sha256)
+printf 'Signed APK: %s\n' "$project_dir/dist/ActivityQuadra-v1.1.1.apk"

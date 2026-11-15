@@ -49,7 +49,7 @@ public final class MainActivity extends Activity {
         root.setOnApplyWindowInsetsListener((view,insets)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());view.setPadding(bars.left,bars.top,bars.right,bars.bottom);}else view.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});root.requestApplyInsets();
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,-1));
         body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(dp(20),dp(22),dp(20),dp(28));scroll.addView(body,new ScrollView.LayoutParams(-1,-2));
-        label(body,"ACTIVITY TRIO",12,Color.rgb(169,187,255),true);gap(body,5);label(body,"A little progress, every day.",26,Graphs.TEXT,true);gap(body,9);
+        label(body,"ACTIVITY QUADRA",12,Color.rgb(169,187,255),true);gap(body,5);label(body,"A little progress, every day.",26,Graphs.TEXT,true);gap(body,9);
         label(body,"Your public coding & learning activity, together.",14,Graphs.MUTED,false);gap(body,16);
         LinearLayout actions=row(body);rowButton(actions,"Refresh",()->{boolean started=Widgets.refresh(this);toast(started?"Refreshing public activity…":!Store.liveConfigured(this)?"Add a GitHub, Codeforces or LeetCode username in Profiles first.":"Please wait a minute between refresh requests.");});rowButton(actions,"Add widget",this::pinWidget);rowButton(actions,"Profiles",this::settings);gap(body,14);
         if(!selected.equals("all")){body.addView(button("‹ All four",()->{selected="all";render();}));gap(body,8);}
@@ -98,7 +98,7 @@ public final class MainActivity extends Activity {
     }
     private void pinWidget(){
         String[] names={"All four together","GitHub","Codeforces","TryHackMe","LeetCode"};Class<?>[] types=Widgets.TYPES;
-        new AlertDialog.Builder(this).setTitle("Add to your home screen").setItems(names,(dialog,which)->{AppWidgetManager manager=AppWidgetManager.getInstance(this);if(manager.isRequestPinAppWidgetSupported())manager.requestPinAppWidget(new ComponentName(this,types[which]),null,null);else new AlertDialog.Builder(this).setTitle("Add Activity Trio").setMessage("Long-press an empty area of your home screen → Widgets → Activity Trio. Drag the combined or individual widget onto your home screen. Long-press the widget to resize it.").setPositiveButton("OK",null).show();}).setNegativeButton("Cancel",null).show();
+        new AlertDialog.Builder(this).setTitle("Add to your home screen").setItems(names,(dialog,which)->{AppWidgetManager manager=AppWidgetManager.getInstance(this);if(manager.isRequestPinAppWidgetSupported())manager.requestPinAppWidget(new ComponentName(this,types[which]),null,null);else new AlertDialog.Builder(this).setTitle("Add Activity Quadra").setMessage("Long-press an empty area of your home screen → Widgets → Activity Quadra. Drag the combined or individual widget onto your home screen. Long-press the widget to resize it.").setPositiveButton("OK",null).show();}).setNegativeButton("Cancel",null).show();
     }
     private void settings(){
         LinearLayout fields=new LinearLayout(this);fields.setOrientation(LinearLayout.VERTICAL);fields.setPadding(dp(22),dp(12),dp(22),0);EditText[] users=new EditText[ActivityData.PROVIDERS.length];

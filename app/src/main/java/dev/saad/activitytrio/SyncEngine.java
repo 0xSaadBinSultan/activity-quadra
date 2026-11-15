@@ -19,7 +19,7 @@ public final class SyncEngine {
     }
     public static String request(String address,JSONObject body)throws Exception{
         URL url=new URL(address);if(!url.getProtocol().equals("https"))throw new IOException("HTTPS is required");
-        HttpURLConnection connection=(HttpURLConnection)url.openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("User-Agent","ActivityTrio/1.1 (Android; public activity)");
+        HttpURLConnection connection=(HttpURLConnection)url.openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("User-Agent","ActivityQuadra/1.1 (Android; public activity)");
         try{
             if(body!=null){
                 byte[] bytes=body.toString().getBytes(StandardCharsets.UTF_8);connection.setRequestMethod("POST");connection.setDoOutput(true);connection.setRequestProperty("Content-Type","application/json");connection.setFixedLengthStreamingMode(bytes.length);

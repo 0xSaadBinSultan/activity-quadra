@@ -1,4 +1,4 @@
-Activity Trio's original application source is licensed under the MIT License.
+Activity Quadra's original application source is licensed under the MIT License.
 
 The included Gradle wrapper scripts/JAR are Gradle project code distributed
 under the Apache License 2.0. Their existing copyright notices and headers
@@ -9,5 +9,5 @@ under their respective Apache 2.0 licenses. JUnit and Robolectric are build/test
 dependencies, not bundled activity data services. Upstream notices and licenses
 remain applicable; the MIT license does not relicense third-party components.
 
-Names and marks GitHub, Codeforces, TryHackMe, Android and Gradle belong to
-their respective owners. Activity Trio is an independent community project.
+Names and marks GitHub, Codeforces, TryHackMe, LeetCode, Android and Gradle belong to
+their respective owners. Activity Quadra is an independent community project.
