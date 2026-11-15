@@ -40,6 +40,39 @@ public final class Parsers {
         for(Map.Entry<LocalDate,Integer> row:counts.entrySet()){int count=row.getValue(),level=1+(count>1?1:0)+(count>4?1:0)+(count>9?1:0);days.put(row.getKey(),new ActivityData.Day(count,level));total+=count;}
         return new ActivityData("codeforces",username,year,total,updated,zone,false,days);
     }
+    private static int nonnegative(Object value){
+        if(!(value instanceof Integer)&&!(value instanceof Long))throw new IllegalArgumentException("Invalid LeetCode count");
+        long number=((Number)value).longValue();if(number<0||number>Integer.MAX_VALUE)throw new IllegalArgumentException("Invalid LeetCode count");return (int)number;
+    }
+    private static Map<String,Integer> problemCounts(JSONArray rows)throws JSONException{
+        Map<String,Integer> counts=new HashMap<>();
+        for(int i=0;i<rows.length();i++){
+            JSONObject row=rows.getJSONObject(i);String difficulty=row.getString("difficulty");
+            if(Arrays.asList("All","Easy","Medium","Hard").contains(difficulty)){
+                if(counts.containsKey(difficulty))throw new IllegalArgumentException("Duplicate LeetCode difficulty");counts.put(difficulty,nonnegative(row.get("count")));
+            }
+        }
+        if(!counts.containsKey("All"))throw new IllegalArgumentException("LeetCode problem totals unavailable");return counts;
+    }
+    public static ActivityData leetcode(JSONObject response,String username,int year,String zone,String updated)throws JSONException{
+        if(response.has("errors")&&!response.isNull("errors")&&response.getJSONArray("errors").length()>0)throw new IllegalArgumentException("LeetCode query unavailable");
+        JSONObject payload=response.getJSONObject("data"),user=payload.getJSONObject("matchedUser");
+        if(!user.getString("username").equalsIgnoreCase(username))throw new IllegalArgumentException("LeetCode profile does not match");
+        Map<String,Integer> solved=problemCounts(user.getJSONObject("submitStatsGlobal").getJSONArray("acSubmissionNum")),available=problemCounts(payload.getJSONArray("allQuestionsCount"));
+        Object raw=user.getJSONObject("userCalendar").get("submissionCalendar");if(!(raw instanceof String))throw new IllegalArgumentException("LeetCode calendar unavailable");
+        JSONObject calendar=new JSONObject((String)raw);
+        TreeMap<LocalDate,ActivityData.Day> days=new TreeMap<>();Iterator<String> keys=calendar.keys();int total=0;
+        while(keys.hasNext()){
+            String key=keys.next();if(!key.matches("[0-9]{1,12}"))throw new IllegalArgumentException("Invalid LeetCode calendar date");int count=nonnegative(calendar.get(key));
+            // The epoch encodes the calendar day at UTC midnight, not the viewer's timezone.
+            LocalDate day=Instant.ofEpochSecond(Long.parseLong(key)).atZone(ZoneOffset.UTC).toLocalDate();if(day.getYear()!=year)continue;
+            int combined=Math.addExact(count,days.containsKey(day)?days.get(day).count:0);int level=combined==0?0:1+(combined>1?1:0)+(combined>4?1:0)+(combined>9?1:0);
+            days.put(day,new ActivityData.Day(combined,level));total=Math.addExact(total,count);
+        }
+        JSONObject problems=new JSONObject().put("solved",solved.get("All")).put("available",available.get("All")),difficulty=new JSONObject();
+        for(String name:new String[]{"Easy","Medium","Hard"})if(solved.containsKey(name)&&available.containsKey(name))difficulty.put(name,new JSONObject().put("solved",solved.get(name)).put("available",available.get(name)));
+        problems.put("difficulty",difficulty);return new ActivityData("leetcode",username,year,total,updated,zone,false,days,problems);
+    }
     public static ActivityData tryhackme(JSONObject snapshot,String username,String zone)throws JSONException{
         if(!snapshot.optString("provider").equals("tryhackme")||!snapshot.getString("username").equalsIgnoreCase(username))throw new IllegalArgumentException("Snapshot belongs to another TryHackMe profile");
         int year=snapshot.getInt("year");if(year<2000||year>2200)throw new IllegalArgumentException("Invalid snapshot year");

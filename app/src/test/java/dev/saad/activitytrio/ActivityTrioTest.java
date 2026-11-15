@@ -1,6 +1,7 @@
 package dev.saad.activitytrio;
 
 import android.app.Application;
+import android.app.AlertDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.*;
 import android.graphics.*;
@@ -37,31 +38,39 @@ public class ActivityTrioTest {
     private JSONObject submission(long id,String instant,String verdict)throws Exception{return new JSONObject().put("id",id).put("creationTimeSeconds",Instant.parse(instant).getEpochSecond()).put("verdict",verdict);}
     @Test public void codeforcesTimezoneDuplicatesAndUnsuccessfulAttempts()throws Exception{
         JSONArray rows=new JSONArray().put(submission(1,"2026-01-01T04:30:00Z","OK")).put(submission(2,"2026-01-01T05:30:00Z","WRONG_ANSWER")).put(submission(2,"2026-01-01T05:30:00Z","WRONG_ANSWER")).put(submission(3,"2027-01-01T04:59:00Z","COMPILATION_ERROR")).put(submission(4,"2027-01-01T05:01:00Z","OK"));
-        ActivityData d=Parsers.codeforces(rows,"saadbinsultan",2026,"America/New_York","2026-11-14T12:00:00Z");assertEquals(2,d.total);assertEquals(Integer.valueOf(1),d.day(LocalDate.of(2026,1,1)).count);assertEquals(Integer.valueOf(1),d.day(LocalDate.of(2026,12,31)).count);assertEquals(Integer.valueOf(0),d.day(LocalDate.of(2026,6,1)).count);
+        ActivityData d=Parsers.codeforces(rows,"demo-user",2026,"America/New_York","2026-11-14T12:00:00Z");assertEquals(2,d.total);assertEquals(Integer.valueOf(1),d.day(LocalDate.of(2026,1,1)).count);assertEquals(Integer.valueOf(1),d.day(LocalDate.of(2026,12,31)).count);assertEquals(Integer.valueOf(0),d.day(LocalDate.of(2026,6,1)).count);
     }
-    @Test public void tryhackmeLeapYearAndNoInventedCounts()throws Exception{ActivityData d=Parsers.tryhackme(snapshot(2024,"0xsaadbinsultan"),"0xSaadBinSultan","UTC");assertEquals(366,d.cells.size());assertTrue(d.snapshot);assertNull(d.day(LocalDate.of(2024,2,29)).count);assertTrue(d.description(LocalDate.of(2024,2,29)).contains("Activity level"));}
-    @Test(expected=IllegalArgumentException.class) public void tryhackmeWrongProfileRejected()throws Exception{Parsers.tryhackme(snapshot(2026,"someoneelse"),"0xsaadbinsultan","UTC");}
+    @Test public void tryhackmeLeapYearAndNoInventedCounts()throws Exception{ActivityData d=Parsers.tryhackme(snapshot(2024,"demo-user"),"demo-user","UTC");assertEquals(366,d.cells.size());assertTrue(d.snapshot);assertNull(d.day(LocalDate.of(2024,2,29)).count);assertTrue(d.description(LocalDate.of(2024,2,29)).contains("Activity level"));}
+    @Test(expected=IllegalArgumentException.class) public void tryhackmeWrongProfileRejected()throws Exception{Parsers.tryhackme(snapshot(2026,"someoneelse"),"demo-user","UTC");}
     @Test(expected=IllegalArgumentException.class) public void tryhackmeIncompleteRejected()throws Exception{JSONObject s=snapshot(2026,"u");s.getJSONArray("colors").remove(0);Parsers.tryhackme(s,"u","UTC");}
     @Test(expected=IllegalArgumentException.class) public void tryhackmeUnknownColorRejected()throws Exception{JSONObject s=snapshot(2026,"u");s.getJSONArray("colors").put(0,"rgb(1,2,3)");Parsers.tryhackme(s,"u","UTC");}
-    @Test public void actualBundledSnapshotValid()throws Exception{try(InputStream in=context.getAssets().open("tryhackme-snapshot.json")){ActivityData d=Parsers.tryhackme(new JSONObject(new String(Store.bytes(in,256*1024),StandardCharsets.UTF_8)),"0xsaadbinsultan","America/New_York");assertEquals(126,d.total);assertEquals(365,d.cells.size());assertTrue(d.updated.startsWith("2026-11-13"));}}
+    @Test public void freshInstallHasNoUsernamesOrBundledProfileCaches()throws Exception{for(String id:ActivityData.PROVIDERS){assertEquals("",Store.user(context,id));assertNull(Store.read(context,id));}assertFalse(Store.configured(context));assertEquals(ZoneId.systemDefault().getId(),Store.zone(context));for(String name:context.getAssets().list(""))assertFalse(name.endsWith("-seed.json")||name.equals("tryhackme-snapshot.json"));}
+    @Test public void firstLaunchAsksForUsernamesAndAllowsOnlyLeetcode()throws Exception{
+        try(org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class).setup()){
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();AlertDialog dialog=(AlertDialog)org.robolectric.shadows.ShadowDialog.getLatestDialog();assertNotNull(dialog);
+            ArrayList<EditText> fields=new ArrayList<>();findEdits(dialog.getWindow().getDecorView(),fields);assertEquals(6,fields.size());for(int i=0;i<4;i++)assertEquals("",fields.get(i).getText().toString());
+            fields.get(3).setText("demo-user");dialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();assertFalse(dialog.isShowing());assertEquals("demo-user",Store.user(context,"leetcode"));assertEquals("",Store.user(context,"github"));assertEquals("",Store.user(context,"codeforces"));assertEquals("",Store.user(context,"tryhackme"));assertTrue(Store.configured(context));
+        }
+    }
+    private static void findEdits(View view,List<EditText> result){if(view instanceof EditText)result.add((EditText)view);if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)findEdits(((ViewGroup)view).getChildAt(i),result);}
     @Test public void jsonRoundtripPreservesUnknownCounts()throws Exception{ActivityData a=Parsers.tryhackme(snapshot(2026,"u"),"u","UTC"),b=ActivityData.fromJson(a.json());assertEquals(a.json().toString(),b.json().toString());assertNull(b.day(LocalDate.of(2026,1,2)).count);}
-    @Test public void switchingProfileDoesNotDisplayPreviousUsersGraph(){Store.seed(context);assertNotNull(Store.read(context,"github"));Store.prefs(context).edit().putString("github","another-person").apply();assertNull(Store.read(context,"github"));Store.seed(context);assertNull(Store.read(context,"github"));}
-    @Test public void switchingYearRejectsOldLiveDataButRetainsDatedSnapshot(){Store.seed(context);Store.prefs(context).edit().putInt("year",2025).apply();assertNull(Store.read(context,"github"));assertNotNull(Store.read(context,"tryhackme"));assertEquals(2026,Store.read(context,"tryhackme").year);}
+    @Test public void switchingProfileDoesNotDisplayPreviousUsersGraph(){TestFixtures.cache(context);assertNotNull(Store.read(context,"github"));Store.prefs(context).edit().putString("github","another-person").apply();assertNull(Store.read(context,"github"));}
+    @Test public void switchingYearRejectsOldLiveDataButRetainsDatedSnapshot(){TestFixtures.cache(context);Store.prefs(context).edit().putInt("year",2025).apply();assertNull(Store.read(context,"github"));assertNotNull(Store.read(context,"tryhackme"));assertEquals(2026,Store.read(context,"tryhackme").year);}
     @Test(expected=IOException.class) public void importSizeBounded()throws Exception{Store.bytes(new ByteArrayInputStream(new byte[257]),256);}
     @Test public void everyDateHitsItsSquareAtMultipleAspectRatios(){for(int year:new int[]{2024,2026})for(int[] size:new int[][]{{320,90},{1000,180},{250,500},{640,120},{1200,480}}){Graphs.Layout g=new Graphs.Layout(year,size[0],size[1],1);for(LocalDate d=LocalDate.of(year,1,1);d.getYear()==year;d=d.plusDays(1)){long index=d.toEpochDay()-g.start.toEpochDay();assertEquals(d,g.hit(g.x+(index/7+.4f)*g.step,g.y+(index%7+.4f)*g.step));}assertNull(g.hit(-1,-1));assertTrue(g.x>=19);assertTrue(g.y>=18);assertTrue(g.x+g.weeks*g.step<=size[0]+.01f);assertTrue(g.y+7*g.step<=size[1]+.01f);}}
     @Test public void widgetLayoutsAndResizeRenderWithoutDataAndWithCache(){
         AppWidgetManager manager=AppWidgetManager.getInstance(context);org.robolectric.shadows.ShadowAppWidgetManager shadow=org.robolectric.Shadows.shadowOf(manager);
-        @SuppressWarnings("unchecked") Class<? extends android.appwidget.AppWidgetProvider>[] types=new Class[]{TrioWidget.class,GithubWidget.class,CodeforcesWidget.class,TryHackMeWidget.class};
+        @SuppressWarnings("unchecked") Class<? extends android.appwidget.AppWidgetProvider>[] types=new Class[]{TrioWidget.class,GithubWidget.class,CodeforcesWidget.class,TryHackMeWidget.class,LeetcodeWidget.class};
         for(boolean seed:new boolean[]{false,true}){
-            for(String provider:ActivityData.PROVIDERS)Store.prefs(context).edit().putString(provider,seed?(provider.equals("github")?"0xSaadBinSultan":provider.equals("codeforces")?"saadbinsultan":"0xsaadbinsultan"):"uncached-user").apply();
-            if(seed)Store.seed(context);
+            for(String provider:ActivityData.PROVIDERS)Store.prefs(context).edit().putString(provider,seed?"demo-user":"uncached-user").apply();
+            if(seed)TestFixtures.cache(context);
             for(int i=0;i<types.length;i++){
                 int id=shadow.createWidget(types[i],types[i]==TrioWidget.class?R.layout.widget_trio:R.layout.widget_single);Bundle options=new Bundle();options.putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH,280+i*70);options.putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT,types[i]==TrioWidget.class?340:140);manager.updateAppWidgetOptions(id,options);Widgets.update(context,manager,id,types[i]);
                 View view=shadow.getViewFor(id);String text=allText(view);assertTrue(seed?!text.contains("waiting for data"):text.contains("waiting for data"));if(seed&&types[i]==TrioWidget.class){assertTrue(text.contains("126 events"));assertNotNull(((ImageView)view.findViewById(R.id.github_graph)).getDrawable());}
             }
         }
     }
-    @Test public void refreshRequestsAreThrottled(){assertTrue(Widgets.refresh(context));assertFalse(Widgets.refresh(context));}
-    @Test public void dashboardOpensAndDetailsUseRealSnapshot(){try(org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class,new Intent(context,MainActivity.class).putExtra("provider","tryhackme")).setup()){assertTrue(allText(c.get().getWindow().getDecorView()).contains("126 events"));assertTrue(allText(c.get().getWindow().getDecorView()).contains("SNAPSHOT"));assertTrue(allText(c.get().getWindow().getDecorView()).contains("13 Nov"));}}
+    @Test public void refreshRequestsAreThrottled(){Store.prefs(context).edit().putString("github","demo-user").apply();assertTrue(Widgets.refresh(context));assertFalse(Widgets.refresh(context));}
+    @Test public void dashboardOpensAndDetailsUseSyntheticSnapshot(){TestFixtures.cache(context);try(org.robolectric.android.controller.ActivityController<MainActivity> c=Robolectric.buildActivity(MainActivity.class,new Intent(context,MainActivity.class).putExtra("provider","tryhackme")).setup()){assertTrue(allText(c.get().getWindow().getDecorView()).contains("126 events"));assertTrue(allText(c.get().getWindow().getDecorView()).contains("SNAPSHOT"));assertTrue(allText(c.get().getWindow().getDecorView()).contains("13 Nov"));}}
     static String allText(View v){StringBuilder b=new StringBuilder();if(v instanceof TextView)b.append(((TextView)v).getText()).append('\n');if(v instanceof ViewGroup)for(int i=0;i<((ViewGroup)v).getChildCount();i++)b.append(allText(((ViewGroup)v).getChildAt(i)));return b.toString();}
 }

@@ -20,8 +20,8 @@ public final class Graphs {
         }
     }
     public static int color(String provider,int level){
-        int[][] values={{0x283041,0x174d36,0x236d41,0x37a85b,0x72df91},{0x283041,0x283f64,0x315d94,0x4682c4,0x83b7ee},{0x283041,0x465936,0x687c40,0x91a64a,0xb5d962}};
-        int index=provider.equals("github")?0:provider.equals("codeforces")?1:2;return 0xff000000|values[index][Math.max(0,Math.min(4,level))];
+        int[][] values={{0x283041,0x174d36,0x236d41,0x37a85b,0x72df91},{0x283041,0x283f64,0x315d94,0x4682c4,0x83b7ee},{0x283041,0x465936,0x687c40,0x91a64a,0xb5d962},{0x283041,0x624b25,0x94691f,0xcb902d,0xffc451}};
+        int index=provider.equals("github")?0:provider.equals("codeforces")?1:provider.equals("leetcode")?3:2;return 0xff000000|values[index][Math.max(0,Math.min(4,level))];
     }
     public static void draw(Canvas canvas,ActivityData data,int width,int height,float density){
         Layout g=new Layout(data.year,width,height,density);Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));paint.setTextSize(8*density);paint.setColor(MUTED);

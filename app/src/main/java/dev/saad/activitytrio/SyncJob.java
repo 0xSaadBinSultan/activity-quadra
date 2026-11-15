@@ -13,14 +13,14 @@ public final class SyncJob extends JobService {
     private volatile boolean stopped;
     private volatile int activeId=-1;
     public static void schedule(Context context,boolean immediate){
-        JobScheduler scheduler=context.getSystemService(JobScheduler.class);if(scheduler==null)return;
+        JobScheduler scheduler=context.getSystemService(JobScheduler.class);if(scheduler==null||!Store.liveConfigured(context))return;
         JobInfo.Builder builder=new JobInfo.Builder(immediate?ONCE:PERIODIC,new ComponentName(context,SyncJob.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
         if(immediate)builder.setOverrideDeadline(0);else builder.setPeriodic(6*60*60*1000L).setPersisted(true);
         scheduler.schedule(builder.build());
     }
     public static void maintain(Context context){
         JobScheduler scheduler=context.getSystemService(JobScheduler.class);if(scheduler==null)return;
-        if(Widgets.hasWidgets(context)){if(scheduler.getPendingJob(PERIODIC)==null)schedule(context,false);}else scheduler.cancel(PERIODIC);
+        if(Widgets.hasWidgets(context)&&Store.liveConfigured(context)){if(scheduler.getPendingJob(PERIODIC)==null)schedule(context,false);}else scheduler.cancel(PERIODIC);
     }
     @Override public boolean onStartJob(JobParameters parameters){
         if(!RUNNING.compareAndSet(false,true))return false;

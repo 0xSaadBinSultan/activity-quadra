@@ -1,86 +1,134 @@
 # Activity Trio
 
-**GitHub, Codeforces and TryHackMe activity — together on your Android home screen.**
+**GitHub, Codeforces, TryHackMe and LeetCode activity on your Android home screen.**
 
-A lightweight native Java Android app with a combined 3-in-1 widget and three
-individual widgets. Resizable, offline-capable and ad-free. Android 8.0+;
-target API 35. No WebView, Google account connection, GitHub token or analytics.
+A lightweight, ad-free native Java app with a combined **4-in-1** widget and four
+individual widgets. Android 8.0+; target API 35. No WebView, account tokens or analytics.
 
 [Download the APK](https://github.com/0xSaadBinSultan/activity-trio/releases/latest)
  · [Report an issue](https://github.com/0xSaadBinSultan/activity-trio/issues)
  · [MIT license](LICENSE)
 
-<img src="docs/combined-widget.png" alt="Activity Trio combined widget with three square-cell contribution graphs and dated snapshots" width="380">
+<img src="docs/combined-widget.png" alt="Synthetic demonstration of the four-service widget" width="380">
 
-The screenshot shows real public profile data captured in November 2026.
-**TryHackMe is a dated, manually updated snapshot, not a live API feed.**
+The preview uses synthetic test data. The installed app starts with **empty profiles
+and no bundled activity**. TryHackMe uses a manually imported, dated snapshot.
 
-## Install
+## Install and configure
 
-1. Download `ActivityTrio-v1.0.0.apk` from Releases and open it on your Android phone.
-   Allow installation from that browser/file manager if Android asks.
-2. Open **Activity Trio** once. Use **Profiles** to set your public usernames,
-   timezone and year. The initial profiles are the author's public profiles;
-   no login is required. The initial timezone is `America/New_York`; change it
-   to your preferred IANA timezone when needed. Year `0` follows the current year.
-3. Tap **Add widget → All three together**. If your launcher does not support
-   pinning, long-press Home → Widgets → Activity Trio and drag a widget onto Home.
-4. Long-press the widget to resize it. Cells stay square. Tap a graph to open
-   date details; tap a cell, pinch to zoom, or use **Choose date** for precision.
+1. Install `ActivityTrio-v1.1.0.apk` from Releases and open Activity Trio.
+2. The first launch asks for **your public usernames**. Enter at least one;
+   leave services you do not use blank. No login, Google account or API key is needed.
+3. The timezone defaults to your device timezone. Year `0` follows the current year.
+4. Choose **Add widget → All four together**, or pick an individual service.
+   If pinning is unavailable, long-press Home → Widgets → Activity Trio.
+5. Long-press the widget to resize it. Tap a graph for date details; tap a square,
+   pinch to zoom, or use **Choose date** in the app.
 
-## Refresh behavior
+Version 1.1 preserves usernames you explicitly saved in 1.0. The old author's
+implicit defaults and bundled caches are no longer used. The app keeps its existing
+package ID and release signing identity so official updates install over 1.0.
 
-GitHub and Codeforces refresh roughly every six hours while a widget is present.
-Android and your launcher's battery restrictions can delay background work.
-The refresh button requests an update, with cooldowns after requests and rate
-limits. Failed requests preserve the last successful cache and its timestamp.
-Removing every widget stops the periodic job. Opening the app requests a refresh
-if its previous request was more than an hour ago. The app works offline from cache.
+## Phones and tablets
 
-A home-screen image widget cannot provide desktop hover tooltips; tapping opens
-the native interactive graph. TryHackMe updates through **Import snapshot** only.
+Android 12+ widgets use the sizes reported by the launcher, including portrait and
+landscape variants. Older or incompatible launchers use orientation-specific size
+ranges. Wide combined widgets (at least 600dp × 300dp) arrange the graphs in a
+**2 × 2** grid; narrow widgets stack the four graphs. The dashboard uses two columns
+at window widths of at least 700dp and adapts again in split screen.
 
-## What the graphs mean
+Graph cells stay square, including when resized. Android's launcher controls the
+final grid spacing and permitted resize steps, so dimensions are not fixed to a
+particular phone or tablet model. Automated rendering checks cover phone and tablet
+portrait/landscape sizes. A physical Redmi Pad 2/HyperOS launcher check is still needed.
+A widget image cannot show desktop hover tooltips; tap it for interactive date details.
 
-- **GitHub:** public contribution calendar and counts from GitHub’s public profile. Contribution dates follow GitHub. No private repository access is requested.
-- **Codeforces:** all submission attempts, including wrong answers and compilation errors, grouped by the selected timezone. These are not counts of distinct solved problems. Public `user.status` is paginated, with at least 2.2 seconds between page requests. An oversized or failed history never replaces the cache with a partial total.
-- **TryHackMe:** explicitly a **dated public-profile snapshot**, initially captured on 13 November 2026. Automated requests were blocked/rate-limited, so the APK does not retry that endpoint, sign in or obtain cookies. Exact daily counts are unavailable: tapping a date shows its activity level, and the total is the profile’s reported total. It never labels the snapshot live.
+## What the numbers mean
 
-The bundled GitHub/Codeforces seeds are real dated public caches, not sample activity. Their timestamps remain visible until a successful refresh. A changed profile/year cannot display another profile’s old live cache. The TryHackMe snapshot retains its actual year, regardless of the selected live-feed year.
+- **GitHub:** public contribution calendar and counts. GitHub's own calendar dates
+  are preserved; no private repository access is requested.
+- **Codeforces:** all submission attempts, including unsuccessful attempts, grouped
+  by the chosen timezone. They are not distinct solved-problem counts. Requests are
+  paginated with at least 2.2 seconds between pages; failed or truncated histories
+  never replace the last successful cache with partial totals.
+- **LeetCode:** **all-time unique solved / total available problems**, with Easy,
+  Medium and Hard breakdowns. The heatmap and submission total cover the selected
+  year and count submissions, not unique solved problems. Calendar dates stay in
+  UTC as encoded by LeetCode. This uses its public profile GraphQL endpoint,
+  without login or cookies; it is not a guaranteed stable third-party API.
+- **TryHackMe:** a **dated public-profile snapshot** imported by the user. Automated
+  requests were blocked/rate-limited, so the app does not retry that endpoint, sign
+  in or read cookies. Exact daily counts are unavailable: dates show activity levels
+  and the total is the profile's reported total. The snapshot retains its actual year.
 
-### Update TryHackMe
+### Refresh and offline use
 
-Use the laptop TryHackMe activity widget’s **Export instructions** to export a new public-profile JSON snapshot. Transfer that JSON to the phone, then **Import snapshot** in Activity Trio. The app validates the provider, username, year, full-year color list, capture timestamp and reported total, and keeps the previous snapshot if validation fails. File access is limited to the document you select. See `tryhackme-export.html` and `tryhackme-export.js` alongside this README for the desktop instructions/helper. The helper reads the visible public graph, not cookies or hidden APIs.
+Configured GitHub, Codeforces and LeetCode feeds refresh about every six hours while
+at least one widget is present. Android battery restrictions can delay background
+work. Refresh has cooldowns and server-limit backoff. Failures keep the last good
+cache and its timestamp; missing/failed feeds are never presented as zero activity.
+Blank usernames cause **no requests**. Removing every widget stops the periodic job.
+Opening the app requests a refresh if the previous request was over an hour ago.
+Cached data stays private and works offline. Changing profiles cannot show another
+person's cached graph. TryHackMe never refreshes automatically.
+
+### Import TryHackMe
+
+Set your TryHackMe username in Profiles. Open `tryhackme-export.html` on your laptop
+for the export instructions and `tryhackme-export.js` helper. The helper reads your
+visible public graph without cookies or hidden APIs. Transfer the resulting JSON
+and choose **Import snapshot**. Provider, username, full-year colors, capture time
+and total are validated; failed imports preserve the old snapshot. Only the document
+you select is read. Nothing is bundled for the author's profile.
 
 ## Privacy
 
-There are no GitHub/Google API tokens or OAuth clients in this project or APK. Only the configured public usernames are sent, over HTTPS, to GitHub/Codeforces. Your device necessarily exposes its IP address to those services. Browser profile links open your normal browser. Cached public activity and settings stay in the app’s private storage; Android app backup is disabled. The user-selected TryHackMe import is local. No personal Google Calendar, Tasks, notes or Drive connection is used.
+No GitHub/Google tokens, OAuth clients, signing secrets or personal account settings
+are included in the source or APK. Only your configured public usernames are sent
+over HTTPS to the corresponding GitHub, Codeforces or LeetCode service, exposing
+your IP address to that service as normal. Browser profile links use your browser.
+Activity/settings stay in app-private storage; Android app backup is disabled.
+TryHackMe imports are local. No Google Calendar, Tasks, Drive or notes access is used.
 
-## Build
+## Build and validate
 
-Use JDK 21, Gradle 8.9 (the wrapper pins its official distribution SHA-256), Android Gradle Plugin 8.7.3, Platform 35 and Build Tools 35.0.0. Install SDK packages through Google’s official SDK Manager after reviewing the SDK license:
+Use JDK 21, Gradle 8.9, Android Gradle Plugin 8.7.3, Platform 35 and Build Tools 35.0.0.
+The wrapper pins the official distribution SHA-256. Install Google's SDK packages
+after accepting its SDK license, then set your local SDK path:
 
 ```sh
-chmod +x gradlew build-release.sh
 sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
 printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
 JAVA_HOME=/path/to/jdk-21 ./gradlew --no-daemon testDebugUnitTest lintRelease assembleRelease
 ```
 
-Tests cover real snapshot parsing, invalid imports, GitHub counts, timezone/year boundaries, duplicate submissions, cache isolation, calendar hit-testing, RemoteViews layouts/resizing, refresh throttling and app rendering on APIs 28 and 35. The API 35 render test writes `app/build/reports/screenshots/dashboard.png`. Optional live-response parser checks run when `ACTIVITY_TRIO_LIVE_FIXTURES` points to a local folder containing freshly downloaded public `github.html` and `codeforces.json` responses. No credentials are required. These host-side tests do not replace checking the final app on a physical phone/launcher.
+Tests cover first-run empty profiles, optional services, cache isolation, public
+LeetCode queries/count validation/UTC dates, GitHub parsing, Codeforces dates and
+deduplication, TryHackMe imports, square-cell hit testing, refresh backoff, Android
+APIs 28/35, exact-size widget options, and phone/tablet portrait/landscape rendering.
+Synthetic screenshots are written to `app/build/reports/screenshots/`.
+Optional local live-response tests use `ACTIVITY_TRIO_LIVE_FIXTURES` containing
+`github.html`, `codeforces.json` and/or `leetcode.json`; those responses are not
+bundled or committed. These host-side checks do not replace physical device testing.
 
-To sign your release, use your own private key; do not add it to Git or paste its password into a terminal command. `build-release.sh` uses a private keystore directory under your home folder, generates its password into a mode-600 local file, and reads passwords from files. Back up that directory securely outside Git if you want to sign compatible future updates. Source recovery alone cannot recover the signing identity. A differently signed build requires uninstalling the previous app first, which removes its local settings.
+To create a signed release:
 
 ```sh
 JAVA_HOME=/path/to/jdk-21 ANDROID_HOME=/path/to/android-sdk ./build-release.sh
 ```
 
-Build artifacts, SDK paths, Gradle caches and signing files are excluded from Git. Signing keys and passwords belong outside the repository. The public release APK is signed by the maintainer; your fork should use your own signing identity.
+The helper keeps the signing identity outside the repo at
+`~/.local/share/activity-trio/signing` (or `ACTIVITY_TRIO_SIGNING_DIR`), with private
+permissions and passwords read from files. Back this directory up securely outside
+Git to sign compatible future updates. A differently signed fork must be installed
+separately after uninstalling the official app, which removes its settings.
+Build output, SDK paths, tokens, caches and signing files are excluded from Git.
 
-Official references: [Android widgets](https://developer.android.com/develop/ui/views/appwidgets/overview), [SDK Manager](https://developer.android.com/tools/sdkmanager), [Codeforces API](https://codeforces.com/apiHelp/methods).
+Official references: [Android widget sizing](https://developer.android.com/develop/ui/views/appwidgets/layouts),
+[SDK Manager](https://developer.android.com/tools/sdkmanager),
+[Codeforces API](https://codeforces.com/apiHelp/methods).
 
-## License and contributions
+## License
 
 Original app code: **MIT**, copyright 2026 0xSaadBinSultan. See [LICENSE](LICENSE),
-[NOTICE](NOTICE) and [CONTRIBUTING.md](CONTRIBUTING.md). Gradle and other upstream
-components retain their own licenses.
+[NOTICE](NOTICE) and [CONTRIBUTING.md](CONTRIBUTING.md). Upstream components keep their licenses.
