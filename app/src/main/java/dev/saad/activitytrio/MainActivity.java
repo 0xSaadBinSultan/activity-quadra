@@ -10,15 +10,11 @@ import android.net.Uri;
 import android.os.*;
 import android.view.*;
 import android.widget.*;
-import org.json.JSONObject;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
 
 /** Small native dashboard. Private cache only; no login, embedded browser or analytics. */
 public final class MainActivity extends Activity {
-    private static final int IMPORT_SNAPSHOT=41;
     private LinearLayout body;
     private String selected="all";
     private boolean registered;
@@ -41,7 +37,7 @@ public final class MainActivity extends Activity {
     }
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);selected=provider(intent.getStringExtra("provider"));render();}
     @Override protected void onSaveInstanceState(Bundle state){super.onSaveInstanceState(state);state.putString("provider",selected);}
-    @Override protected void onResume(){super.onResume();IntentFilter filter=new IntentFilter(SyncJob.UPDATED);androidx.core.content.ContextCompat.registerReceiver(this,updates,filter,androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);registered=true;render();}
+    @Override protected void onResume(){super.onResume();IntentFilter filter=new IntentFilter(SyncJob.UPDATED);androidx.core.content.ContextCompat.registerReceiver(this,updates,filter,androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED);registered=true;Widgets.updateAll(this);render();}
     @Override protected void onPause(){if(registered){unregisterReceiver(updates);registered=false;}super.onPause();}
     private void render(){
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(Color.rgb(16,21,31));setContentView(root);
@@ -49,26 +45,27 @@ public final class MainActivity extends Activity {
         root.setOnApplyWindowInsetsListener((view,insets)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets bars=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());view.setPadding(bars.left,bars.top,bars.right,bars.bottom);}else view.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});root.requestApplyInsets();
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,-1));
         body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(dp(20),dp(22),dp(20),dp(28));scroll.addView(body,new ScrollView.LayoutParams(-1,-2));
-        label(body,"ACTIVITY QUADRA",12,Color.rgb(169,187,255),true);gap(body,5);label(body,"A little progress, every day.",26,Graphs.TEXT,true);gap(body,9);
+        label(body,"ACTIVITY TRIO",12,Color.rgb(169,187,255),true);gap(body,5);label(body,"A little progress, every day.",26,Graphs.TEXT,true);gap(body,9);
         label(body,"Your public coding & learning activity, together.",14,Graphs.MUTED,false);gap(body,16);
-        LinearLayout actions=row(body);rowButton(actions,"Refresh",()->{boolean started=Widgets.refresh(this);toast(started?"Refreshing public activity…":!Store.liveConfigured(this)?"Add a GitHub, Codeforces or LeetCode username in Profiles first.":"Please wait a minute between refresh requests.");});rowButton(actions,"Add widget",this::pinWidget);rowButton(actions,"Profiles",this::settings);gap(body,14);
-        if(!selected.equals("all")){body.addView(button("‹ All four",()->{selected="all";render();}));gap(body,8);}
+        LinearLayout actions=row(body);rowButton(actions,"Refresh",()->{Widgets.updateAll(this);boolean started=Widgets.refresh(this);toast(started?"Refreshing public activity…":!Store.liveConfigured(this)?"Add a GitHub, Codeforces or LeetCode username in Profiles first.":"Please wait a minute between refresh requests.");});rowButton(actions,"Add widget",this::pinWidget);rowButton(actions,"Profiles",this::settings);gap(body,14);
+        if(!selected.equals("all")){body.addView(button("‹ All three",()->{selected="all";render();}));gap(body,8);}
         boolean tablet=selected.equals("all")&&getResources().getConfiguration().screenWidthDp>=700;
         LinearLayout cards=body;
         for(int i=0;i<ActivityData.PROVIDERS.length;i++){
             String id=ActivityData.PROVIDERS[i];if(!selected.equals("all")&&!selected.equals(id))continue;
             if(tablet&&i%2==0){cards=row(body);cards.setGravity(Gravity.TOP);}
-            card(id,cards,tablet);
+            card(id,cards,tablet&&i+1<ActivityData.PROVIDERS.length);
         }
         label(body,"Automatic refresh about every 6 hours while a home-screen widget is present. Android may delay it to save battery. Cached data works offline.",12,Graphs.MUTED,false);gap(body,10);
-        label(body,"Public profiles only · no accounts, API keys, ads or analytics. Codeforces counts submission attempts, including unsuccessful ones. LeetCode shows all-time unique solved/total problems and the selected year’s submissions, with UTC calendar dates. TryHackMe is a dated snapshot, not a live feed.",12,Graphs.MUTED,false);
+        label(body,"Public profiles only · no accounts, API keys, ads or analytics. Codeforces counts submission attempts, including unsuccessful ones. LeetCode shows all-time unique solved/total problems and the selected year’s submissions, with UTC calendar dates.",12,Graphs.MUTED,false);
+        gap(body,12);body.addView(button("Widget help",this::widgetHelp));
     }
     private void card(String id,LinearLayout parent,boolean tablet){
         ActivityData data=Store.read(this,id);LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(16),dp(16),dp(16),dp(16));card.setBackground(background(Color.rgb(25,31,43),22));
         LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(tablet?0:-1,-2,tablet?1:0);cp.bottomMargin=dp(16);if(tablet){cp.leftMargin=dp(5);cp.rightMargin=dp(5);}parent.addView(card,cp);
-        LinearLayout header=row(card);TextView title=text(ActivityData.name(id),21,Graphs.color(id,4),true);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));TextView badge=text(id.equals("tryhackme")?"SNAPSHOT":"PUBLIC",10,Graphs.MUTED,true);header.addView(badge);gap(card,5);
+        LinearLayout header=row(card);TextView title=text(ActivityData.name(id),21,Graphs.color(id,4),true);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));TextView badge=text("PUBLIC",10,Graphs.MUTED,true);header.addView(badge);gap(card,5);
         label(card,(Store.user(this,id).isEmpty()?"Choose your public username in Profiles":Store.user(this,id))+(data==null?"":" · "+data.year),13,Graphs.MUTED,false);gap(card,12);
-        if(data==null){label(card,Store.user(this,id).isEmpty()?"Tap Profiles to set up this service. You can leave unused services blank.":id.equals("tryhackme")?"Import a public-profile snapshot to see the graph.":"No activity cached yet. Tap Refresh when online.",15,Graphs.TEXT,false);gap(card,14);}
+        if(data==null){label(card,Store.user(this,id).isEmpty()?"Tap Profiles to set up this service. You can leave unused services blank.":"No activity cached yet. Tap Refresh when online.",15,Graphs.TEXT,false);if(!Store.error(this,id).isEmpty()){gap(card,5);label(card,Store.error(this,id),12,Color.rgb(246,200,124),false);}gap(card,14);}
         else{
             label(card,data.summary(),id.equals("leetcode")?19:23,Graphs.TEXT,true);gap(card,4);label(card,Widgets.status(this,id,data),12,Graphs.MUTED,false);
             if(id.equals("leetcode")&&data.problems!=null){org.json.JSONObject breakdown=data.problems.optJSONObject("difficulty");if(breakdown!=null){StringBuilder detail=new StringBuilder();for(String name:new String[]{"Easy","Medium","Hard"}){org.json.JSONObject n=breakdown.optJSONObject(name);if(n!=null){if(detail.length()>0)detail.append(" · ");detail.append(name).append(" ").append(n.optInt("solved")).append("/").append(n.optInt("available"));}}label(card,detail.toString(),12,Graphs.MUTED,false);}}
@@ -77,35 +74,36 @@ public final class MainActivity extends Activity {
             TextView day=label(card,"Tap a square to see its date"+(selected.equals("all")?"":" · pinch to zoom"),13,Graphs.MUTED,false);graph.onDay(date->{day.setText(data.description(date));day.setTextColor(Graphs.TEXT);});gap(card,8);
             LinearLayout controls=row(card);rowButton(controls,"Choose date",()->chooseDate(data,day));rowButton(controls,selected.equals("all")?"Expand":"Profile",()->{if(selected.equals("all")){selected=id;render();}else openProfile(id);});
         }
-        if(id.equals("tryhackme")){
-            gap(card,10);label(card,"Daily shades come from the public profile. Exact per-day counts are unavailable; dates show activity levels instead.",12,Graphs.MUTED,false);gap(card,8);
-            LinearLayout imports=row(card);rowButton(imports,"Import snapshot",this::importSnapshot);rowButton(imports,"How to update",this::snapshotHelp);
-        }else if(selected.equals("all")){gap(card,4);card.addView(button("Open public profile ↗",()->openProfile(id)));}
+        if(selected.equals("all")){gap(card,4);card.addView(button("Open public profile ↗",()->openProfile(id)));}
     }
     private void chooseDate(ActivityData data,TextView result){
         LocalDate now=LocalDate.now(ZoneId.of(data.zone));LocalDate initial=now.getYear()==data.year?now:LocalDate.of(data.year,1,1);
         DatePickerDialog picker=new DatePickerDialog(this,(view,year,month,day)->{result.setText(data.description(LocalDate.of(year,month+1,day)));result.setTextColor(Graphs.TEXT);},initial.getYear(),initial.getMonthValue()-1,initial.getDayOfMonth());
         picker.getDatePicker().setMinDate(LocalDate.of(data.year,1,1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());picker.getDatePicker().setMaxDate(LocalDate.of(data.year,12,31).atTime(23,59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());picker.show();
     }
-    private void openProfile(String id){if(Store.user(this,id).isEmpty()){settings();return;}String user=Uri.encode(Store.user(this,id));String url=id.equals("github")?"https://github.com/"+user:id.equals("codeforces")?"https://codeforces.com/profile/"+user:id.equals("leetcode")?"https://leetcode.com/u/"+user+"/":"https://tryhackme.com/p/"+user;try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(ActivityNotFoundException e){toast("No browser is available.");}}
-    private void snapshotHelp(){new AlertDialog.Builder(this).setTitle("Update TryHackMe activity").setMessage("TryHackMe blocks automated activity requests, so this app keeps a dated public-profile snapshot. It never signs in or reads cookies.\n\nOn your laptop, use the TryHackMe activity widget’s snapshot export instructions to save its public graph as JSON. Transfer the file to your phone, then choose Import snapshot here. The profile name, capture date and full-year colors are validated.\n\nA snapshot never refreshes itself. The graph shows activity levels, not invented daily counts.").setPositiveButton("OK",null).setNeutralButton("Public profile",(d,w)->openProfile("tryhackme")).show();}
-    private void importSnapshot(){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"application/json","text/plain","application/octet-stream"});try{startActivityForResult(intent,IMPORT_SNAPSHOT);}catch(ActivityNotFoundException e){toast("No document picker is available.");}}
-    @Override protected void onActivityResult(int request,int result,Intent intent){
-        super.onActivityResult(request,result,intent);if(request!=IMPORT_SNAPSHOT||result!=RESULT_OK||intent==null||intent.getData()==null)return;
-        try(InputStream in=getContentResolver().openInputStream(intent.getData())){
-            if(in==null)throw new IllegalArgumentException();ActivityData data=Parsers.tryhackme(new JSONObject(new String(Store.bytes(in,256*1024),StandardCharsets.UTF_8)),Store.user(this,"tryhackme"),Store.zone(this));Store.save(this,data);Widgets.updateAll(this);render();toast("Imported snapshot · "+Widgets.stamp(data));
-        }catch(Exception error){toast("Could not import. Use a complete public TryHackMe snapshot for the profile in Settings; the existing graph was kept.");}
-    }
+    private void openProfile(String id){if(Store.user(this,id).isEmpty()){settings();return;}String user=Uri.encode(Store.user(this,id));String url=id.equals("github")?"https://github.com/"+user:id.equals("codeforces")?"https://codeforces.com/profile/"+user:"https://leetcode.com/u/"+user+"/";try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(ActivityNotFoundException e){toast("No browser is available.");}}
     private void pinWidget(){
-        String[] names={"All four together","GitHub","Codeforces","TryHackMe","LeetCode"};Class<?>[] types=Widgets.TYPES;
-        new AlertDialog.Builder(this).setTitle("Add to your home screen").setItems(names,(dialog,which)->{AppWidgetManager manager=AppWidgetManager.getInstance(this);if(manager.isRequestPinAppWidgetSupported())manager.requestPinAppWidget(new ComponentName(this,types[which]),null,null);else new AlertDialog.Builder(this).setTitle("Add Activity Quadra").setMessage("Long-press an empty area of your home screen → Widgets → Activity Quadra. Drag the combined or individual widget onto your home screen. Long-press the widget to resize it.").setPositiveButton("OK",null).show();}).setNegativeButton("Cancel",null).show();
+        String[] names={"All three together","GitHub","Codeforces","LeetCode"};Class<?>[] types=Widgets.TYPES;
+        new AlertDialog.Builder(this).setTitle("Add to your home screen").setItems(names,(dialog,which)->{AppWidgetManager manager=AppWidgetManager.getInstance(this);if(manager.isRequestPinAppWidgetSupported())manager.requestPinAppWidget(new ComponentName(this,types[which]),null,null);else new AlertDialog.Builder(this).setTitle("Add Activity Trio").setMessage("Long-press an empty area of your home screen → Widgets → Activity Trio. Drag the combined or individual widget onto your home screen. Long-press the widget to resize it.").setPositiveButton("OK",null).show();}).setNeutralButton("Preview combined",(d,w)->previewWidget()).setNegativeButton("Cancel",null).show();
+    }
+    private void previewWidget(){
+        FrameLayout holder=new FrameLayout(this);float width=Math.max(250,Math.min(900,getResources().getConfiguration().screenWidthDp-64));
+        View widget=Widgets.render(this,0,TrioWidget.class,width,340).apply(this,holder);holder.addView(widget,new FrameLayout.LayoutParams(-1,dp(340)));disablePreviewActions(widget);
+        new AlertDialog.Builder(this).setTitle("All three together").setView(holder).setPositiveButton("Close",null).show();
+    }
+    private void disablePreviewActions(View view){view.setOnClickListener(null);view.setClickable(false);if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)disablePreviewActions(((ViewGroup)view).getChildAt(i));}
+    private void widgetHelp(){
+        StringBuilder message=new StringBuilder("If graphs appear here but not on Home, open the app once to resend cached graphs. After an update, remove and re-add only the combined widget if your launcher still keeps its old layout.\n\nUse Add widget → Preview combined to check the compact three-graph layout view.\n\nLocal status (no tokens or usernames):\n");
+        for(String id:ActivityData.PROVIDERS)message.append(ActivityData.name(id)).append(": ").append(Store.read(this,id)==null?"no graph cached":"graph cached").append('\n');
+        message.append("Widget send failures: ").append(Store.prefs(this).getInt("widget-update-failures",0));
+        new AlertDialog.Builder(this).setTitle("Widget help").setMessage(message).setPositiveButton("OK",null).setNeutralButton("Preview combined",(d,w)->previewWidget()).show();
     }
     private void settings(){
         LinearLayout fields=new LinearLayout(this);fields.setOrientation(LinearLayout.VERTICAL);fields.setPadding(dp(22),dp(12),dp(22),0);EditText[] users=new EditText[ActivityData.PROVIDERS.length];
         for(int i=0;i<ActivityData.PROVIDERS.length;i++){String id=ActivityData.PROVIDERS[i];label(fields,ActivityData.name(id)+" public username",13,Graphs.MUTED,false);EditText e=new EditText(this);e.setSingleLine(true);e.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);e.setText(Store.user(this,id));e.setHint("Optional · your username");e.setContentDescription(ActivityData.name(id)+" public username");fields.addView(e);users[i]=e;}
         label(fields,"Timezone (IANA name)",13,Graphs.MUTED,false);EditText zone=new EditText(this);zone.setSingleLine(true);zone.setText(Store.zone(this));fields.addView(zone);
         label(fields,"Year (0 = current year)",13,Graphs.MUTED,false);EditText year=new EditText(this);year.setSingleLine(true);year.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);year.setText(String.valueOf(Store.prefs(this).getInt("year",0)));fields.addView(year);gap(fields,8);
-        label(fields,"Enter at least one username; leave unused services blank. No login or API key is needed. GitHub’s contribution dates and LeetCode’s UTC dates are preserved. The timezone groups Codeforces submissions. TryHackMe needs a manual snapshot import.",12,Graphs.MUTED,false);
+        label(fields,"Enter at least one username; leave unused services blank. No login or API key is needed. GitHub’s contribution dates and LeetCode’s UTC dates are preserved. The timezone groups Codeforces submissions.",12,Graphs.MUTED,false);
         ScrollView scroll=new ScrollView(this);scroll.addView(fields);AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Public profiles").setView(scroll).setPositiveButton("Save",null).setNegativeButton("Cancel",null).create();dialog.setOnShowListener(ignored->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
             try{
                 String[] values=new String[ActivityData.PROVIDERS.length];for(int i=0;i<ActivityData.PROVIDERS.length;i++){values[i]=users[i].getText().toString().trim();if(!Store.validUsername(ActivityData.PROVIDERS[i],values[i]))throw new IllegalArgumentException("Check the "+ActivityData.name(ActivityData.PROVIDERS[i])+" username.");}

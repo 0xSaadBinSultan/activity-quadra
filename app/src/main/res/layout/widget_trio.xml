@@ -1,27 +1,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="14dp" android:background="@drawable/widget_background">
  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-  <TextView android:id="@+id/widget_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Activity Quadra" android:textSize="14sp" android:textStyle="bold" android:textColor="#EDF1FA"/>
+  <TextView android:id="@+id/widget_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Activity Trio" android:textSize="14sp" android:textStyle="bold" android:textColor="#EDF1FA"/>
   <Button android:id="@+id/widget_refresh" android:layout_width="40dp" android:layout_height="40dp" android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp" android:text="↻" android:textSize="24sp" android:textColor="#EDF1FA" android:background="@drawable/refresh_background" android:contentDescription="@string/widget_refresh"/>
  </LinearLayout>
- <LinearLayout android:id="@+id/github_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
+ <LinearLayout android:id="@+id/github_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical" android:padding="2dp">
   <TextView android:id="@+id/github_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="GitHub" android:textColor="#72DF91" android:textSize="12sp" android:textStyle="bold"/>
-  <TextView android:id="@+id/github_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Contributions" android:textSize="10sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
+  <TextView android:id="@+id/github_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Contributions" android:textSize="11sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
   <ImageView android:id="@+id/github_graph" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:scaleType="fitCenter" android:contentDescription="GitHub activity; open for date details"/>
  </LinearLayout>
- <LinearLayout android:id="@+id/codeforces_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
+ <LinearLayout android:id="@+id/codeforces_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical" android:padding="2dp">
   <TextView android:id="@+id/codeforces_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Codeforces" android:textColor="#83B7EE" android:textSize="12sp" android:textStyle="bold"/>
-  <TextView android:id="@+id/codeforces_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Submissions" android:textSize="10sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
+  <TextView android:id="@+id/codeforces_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Submissions" android:textSize="11sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
   <ImageView android:id="@+id/codeforces_graph" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:scaleType="fitCenter" android:contentDescription="Codeforces activity; open for date details"/>
  </LinearLayout>
- <LinearLayout android:id="@+id/tryhackme_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
-  <TextView android:id="@+id/tryhackme_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="TryHackMe · snapshot" android:textColor="#B5D962" android:textSize="12sp" android:textStyle="bold"/>
-  <TextView android:id="@+id/tryhackme_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Import a public-profile snapshot" android:textSize="10sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
-  <ImageView android:id="@+id/tryhackme_graph" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:scaleType="fitCenter" android:contentDescription="TryHackMe snapshot; open for date details"/>
- </LinearLayout>
- <LinearLayout android:id="@+id/leetcode_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical">
+ <LinearLayout android:id="@+id/leetcode_section" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical" android:padding="2dp">
   <TextView android:id="@+id/leetcode_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="LeetCode" android:textColor="#FFC451" android:textSize="12sp" android:textStyle="bold"/>
-  <TextView android:id="@+id/leetcode_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Solved / total problems" android:textSize="10sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
+  <TextView android:id="@+id/leetcode_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Solved / total problems" android:textSize="11sp" android:textColor="#B3BED2" android:maxLines="1" android:ellipsize="end"/>
   <ImageView android:id="@+id/leetcode_graph" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:scaleType="fitCenter" android:contentDescription="LeetCode activity; open for date details"/>
  </LinearLayout>
- <TextView android:id="@+id/widget_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tap any graph for date details" android:textSize="9sp" android:textColor="#A3AFC4" android:maxLines="1" android:ellipsize="end"/>
+ <TextView android:id="@+id/widget_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tap a graph for date details" android:textSize="9sp" android:textColor="#A3AFC4" android:maxLines="1" android:ellipsize="end"/>
 </LinearLayout>

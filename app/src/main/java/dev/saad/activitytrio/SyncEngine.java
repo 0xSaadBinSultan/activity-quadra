@@ -19,7 +19,7 @@ public final class SyncEngine {
     }
     public static String request(String address,JSONObject body)throws Exception{
         URL url=new URL(address);if(!url.getProtocol().equals("https"))throw new IOException("HTTPS is required");
-        HttpURLConnection connection=(HttpURLConnection)url.openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("User-Agent","ActivityQuadra/1.1 (Android; public activity)");
+        HttpURLConnection connection=(HttpURLConnection)url.openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("User-Agent","ActivityTrio/1.3 (Android; public activity)");
         try{
             if(body!=null){
                 byte[] bytes=body.toString().getBytes(StandardCharsets.UTF_8);connection.setRequestMethod("POST");connection.setDoOutput(true);connection.setRequestProperty("Content-Type","application/json");connection.setFixedLengthStreamingMode(bytes.length);
@@ -53,8 +53,12 @@ public final class SyncEngine {
         if(!complete)throw new IOException("Submission history exceeds the request budget");
         return Parsers.codeforces(all,user,year,zone,Instant.now().toString());
     }
-    public String refresh(){return refresh(SyncEngine::download,SyncEngine::request);}
-    String refresh(Fetcher fetcher,Poster poster){
+    public String refresh(){return refresh(SyncEngine::download,SyncEngine::request,()->{
+        Widgets.updateAll(context);
+        context.sendBroadcast(new android.content.Intent(SyncJob.UPDATED).setPackage(context.getPackageName()));
+    });}
+    String refresh(Fetcher fetcher,Poster poster){return refresh(fetcher,poster,()->{});}
+    String refresh(Fetcher fetcher,Poster poster,Runnable publish){
         int success=0,failures=0;
         for(String id:new String[]{"github","codeforces","leetcode"}){
             if(Store.user(context,id).isEmpty())continue;
@@ -66,10 +70,13 @@ public final class SyncEngine {
             }catch(Exception error){
                 if(error instanceof InterruptedException){Thread.currentThread().interrupt();break;}
                 boolean limited=error instanceof HttpProblem&&(((HttpProblem)error).code==429||((HttpProblem)error).code==403);
-                Store.error(context,id,limited?"Server limited access · keeping cached activity":"Refresh unavailable · keeping cached activity");
+                String problem=error instanceof HttpProblem?"Service returned HTTP "+((HttpProblem)error).code:error instanceof java.net.UnknownHostException?"Could not reach the service":error instanceof java.net.SocketTimeoutException?"Service timed out":"Could not read this public profile; check the username";
+                Store.error(context,id,problem+" · "+(Store.read(context,id)==null?"no activity cached yet":"keeping cached activity"));
                 Store.prefs(context).edit().putLong(id+".next",System.currentTimeMillis()+(limited?3_600_000:300_000)).apply();failures++;
             }
+            // Publish each completed feed: another provider's slow/error response must not hold it back.
+            try{publish.run();}catch(RuntimeException ignored){}
         }
-        return success+" feeds refreshed"+(failures>0?" · cached data kept where needed":"")+" · TryHackMe uses its snapshot";
+        return success+" feeds refreshed"+(failures>0?" · cached data kept where needed":"");
     }
 }

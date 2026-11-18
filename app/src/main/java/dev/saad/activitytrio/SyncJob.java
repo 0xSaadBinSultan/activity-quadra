@@ -29,8 +29,8 @@ public final class SyncJob extends JobService {
             String result="Cached activity retained";
             try{result=new SyncEngine(this).refresh();}catch(RuntimeException ignored){result="Refresh interrupted · cached activity retained";}finally{
                 try{
-                Widgets.updateAll(this);Intent update=new Intent(UPDATED).setPackage(getPackageName()).putExtra("message",result);sendBroadcast(update);
-                if(!stopped)jobFinished(parameters,false);
+                try{Widgets.updateAll(this);Intent update=new Intent(UPDATED).setPackage(getPackageName()).putExtra("message",result);sendBroadcast(update);}
+                finally{if(!stopped)jobFinished(parameters,false);}
                 }finally{activeId=-1;executor.shutdown();RUNNING.set(false);}
             }
         });return true;

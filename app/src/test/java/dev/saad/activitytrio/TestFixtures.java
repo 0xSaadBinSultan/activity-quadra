@@ -18,9 +18,9 @@ final class TestFixtures {
         android.content.SharedPreferences.Editor edit=Store.prefs(context).edit().putInt("year",2026).putString("timezone","UTC");for(String provider:ActivityData.PROVIDERS)edit.putString(provider,USER);edit.apply();
         for(String provider:ActivityData.PROVIDERS){
             if(provider.equals("leetcode")){Store.save(context,Parsers.leetcode(leetcode(),USER,2026,"UTC","2026-11-13T19:30:51Z"));continue;}
-            TreeMap<LocalDate,ActivityData.Day> days=new TreeMap<>();LocalDate start=LocalDate.of(2026,1,1);boolean snapshot=provider.equals("tryhackme");
-            for(int i=0;i<365;i++){int count=(i*7+3)%13;days.put(start.plusDays(i),new ActivityData.Day(snapshot?null:count,count==0?0:1+(count>1?1:0)+(count>4?1:0)+(count>9?1:0)));}
-            Store.save(context,new ActivityData(provider,USER,2026,snapshot?126:2190,"2026-11-13T19:30:51Z","UTC",snapshot,days));
+            TreeMap<LocalDate,ActivityData.Day> days=new TreeMap<>();LocalDate start=LocalDate.of(2026,1,1);
+            for(int i=0;i<365;i++){int count=(i*7+3)%13;days.put(start.plusDays(i),new ActivityData.Day(count,count==0?0:1+(count>1?1:0)+(count>4?1:0)+(count>9?1:0)));}
+            Store.save(context,new ActivityData(provider,USER,2026,2190,"2026-11-13T19:30:51Z","UTC",false,days));
         }
     }catch(Exception e){throw new AssertionError(e);}}
 }

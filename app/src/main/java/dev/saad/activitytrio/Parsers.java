@@ -73,16 +73,4 @@ public final class Parsers {
         for(String name:new String[]{"Easy","Medium","Hard"})if(solved.containsKey(name)&&available.containsKey(name))difficulty.put(name,new JSONObject().put("solved",solved.get(name)).put("available",available.get(name)));
         problems.put("difficulty",difficulty);return new ActivityData("leetcode",username,year,total,updated,zone,false,days,problems);
     }
-    public static ActivityData tryhackme(JSONObject snapshot,String username,String zone)throws JSONException{
-        if(!snapshot.optString("provider").equals("tryhackme")||!snapshot.getString("username").equalsIgnoreCase(username))throw new IllegalArgumentException("Snapshot belongs to another TryHackMe profile");
-        int year=snapshot.getInt("year");if(year<2000||year>2200)throw new IllegalArgumentException("Invalid snapshot year");
-        JSONArray colors=snapshot.getJSONArray("colors");LocalDate first=LocalDate.of(year,1,1);if(colors.length()!=first.lengthOfYear())throw new IllegalArgumentException("Snapshot must contain the complete year");
-        String[] palette={"rgb(255,255,255)","rgb(186,227,210)","rgb(88,187,146)","rgb(62,147,112)","rgb(47,111,85)"};TreeMap<LocalDate,ActivityData.Day> days=new TreeMap<>();
-        for(int i=0;i<colors.length();i++){
-            String color=colors.getString(i).replaceAll("\\s+","");int level=Arrays.asList(palette).indexOf(color);if(level<0)throw new IllegalArgumentException("Snapshot color format is not supported");
-            days.put(first.plusDays(i),new ActivityData.Day(null,level));
-        }
-        int total=snapshot.getInt("total");if(total<0)throw new IllegalArgumentException("Invalid activity total");String updated=snapshot.getString("captured");Instant.parse(updated);
-        return new ActivityData("tryhackme",username,year,total,updated,zone,true,days);
-    }
 }
