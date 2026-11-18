@@ -26,8 +26,8 @@ tools_dir="$ANDROID_HOME/build-tools/35.0.0"
 "$tools_dir/zipalign" -f -p 4 "$project_dir/app/build/outputs/apk/release/app-release-unsigned.apk" "$project_dir/dist/aligned.apk"
 "$tools_dir/apksigner" sign --ks "$signing_dir/release.jks" --ks-key-alias activity-trio \
     --ks-pass "file:$signing_dir/password" \
-    --out "$project_dir/dist/ActivityTrio-v1.3.0.apk" "$project_dir/dist/aligned.apk"
-"$tools_dir/apksigner" verify --verbose "$project_dir/dist/ActivityTrio-v1.3.0.apk"
+    --out "$project_dir/dist/ActivityTrio-v1.3.1.apk" "$project_dir/dist/aligned.apk"
+"$tools_dir/apksigner" verify --verbose "$project_dir/dist/ActivityTrio-v1.3.1.apk"
 rm -- "$project_dir/dist/aligned.apk"
-(cd -- "$project_dir/dist" && sha256sum ActivityTrio-v1.3.0.apk > ActivityTrio-v1.3.0.apk.sha256)
-printf 'Signed APK: %s\n' "$project_dir/dist/ActivityTrio-v1.3.0.apk"
+(cd -- "$project_dir/dist" && sha256sum ActivityTrio-v1.3.1.apk > ActivityTrio-v1.3.1.apk.sha256)
+printf 'Signed APK: %s\n' "$project_dir/dist/ActivityTrio-v1.3.1.apk"

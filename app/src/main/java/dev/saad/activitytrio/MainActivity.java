@@ -83,17 +83,19 @@ public final class MainActivity extends Activity {
     }
     private void openProfile(String id){if(Store.user(this,id).isEmpty()){settings();return;}String user=Uri.encode(Store.user(this,id));String url=id.equals("github")?"https://github.com/"+user:id.equals("codeforces")?"https://codeforces.com/profile/"+user:"https://leetcode.com/u/"+user+"/";try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(url)));}catch(ActivityNotFoundException e){toast("No browser is available.");}}
     private void pinWidget(){
-        String[] names={"All three together","GitHub","Codeforces","LeetCode"};Class<?>[] types=Widgets.TYPES;
+        String[] names={Widgets.tablet(this)?"All three — Tablet Large":"All three together","GitHub","Codeforces","LeetCode"};Class<?>[] types=Widgets.pickerTypes(this);
         new AlertDialog.Builder(this).setTitle("Add to your home screen").setItems(names,(dialog,which)->{AppWidgetManager manager=AppWidgetManager.getInstance(this);if(manager.isRequestPinAppWidgetSupported())manager.requestPinAppWidget(new ComponentName(this,types[which]),null,null);else new AlertDialog.Builder(this).setTitle("Add Activity Trio").setMessage("Long-press an empty area of your home screen → Widgets → Activity Trio. Drag the combined or individual widget onto your home screen. Long-press the widget to resize it.").setPositiveButton("OK",null).show();}).setNeutralButton("Preview combined",(d,w)->previewWidget()).setNegativeButton("Cancel",null).show();
     }
     private void previewWidget(){
         FrameLayout holder=new FrameLayout(this);float width=Math.max(250,Math.min(900,getResources().getConfiguration().screenWidthDp-64));
-        View widget=Widgets.render(this,0,TrioWidget.class,width,340).apply(this,holder);holder.addView(widget,new FrameLayout.LayoutParams(-1,dp(340)));disablePreviewActions(widget);
+        int height=Widgets.tablet(this)?Math.max(360,Math.min(900,getResources().getConfiguration().screenHeightDp-240)):340;
+        View widget=Widgets.render(this,0,Widgets.pickerTypes(this)[0],width,height).apply(this,holder);holder.addView(widget,new FrameLayout.LayoutParams(-1,dp(height)));disablePreviewActions(widget);
         new AlertDialog.Builder(this).setTitle("All three together").setView(holder).setPositiveButton("Close",null).show();
     }
     private void disablePreviewActions(View view){view.setOnClickListener(null);view.setClickable(false);if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)disablePreviewActions(((ViewGroup)view).getChildAt(i));}
     private void widgetHelp(){
         StringBuilder message=new StringBuilder("If graphs appear here but not on Home, open the app once to resend cached graphs. After an update, remove and re-add only the combined widget if your launcher still keeps its old layout.\n\nUse Add widget → Preview combined to check the compact three-graph layout view.\n\nLocal status (no tokens or usernames):\n");
+        if(Widgets.tablet(this))message.append("Tablet: choose All three — Tablet Large. Place it on a clear Home page. If resize handles are missing, check the Home screen layout lock in your launcher settings.\n\n");
         for(String id:ActivityData.PROVIDERS)message.append(ActivityData.name(id)).append(": ").append(Store.read(this,id)==null?"no graph cached":"graph cached").append('\n');
         message.append("Widget send failures: ").append(Store.prefs(this).getInt("widget-update-failures",0));
         new AlertDialog.Builder(this).setTitle("Widget help").setMessage(message).setPositiveButton("OK",null).setNeutralButton("Preview combined",(d,w)->previewWidget()).show();

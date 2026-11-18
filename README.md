@@ -16,11 +16,12 @@ The preview uses synthetic test data. A fresh install starts with empty username
 
 ## Install and configure
 
-1. Install `ActivityTrio-v1.3.0.apk` and open Activity Trio.
+1. Install `ActivityTrio-v1.3.1.apk` and open Activity Trio.
 2. Enter your public GitHub, Codeforces and/or LeetCode usernames in Profiles.
    Enter at least one; leave unused services blank. No login or API key is needed.
 3. The timezone defaults to your device timezone. Year `0` follows the current year.
-4. Choose **Add widget → All three together**, or pick an individual service.
+4. On phones, choose **Add widget → All three together**. On tablets, choose
+   **All three — Tablet Large**. The three individual widgets remain available.
    If pinning is unavailable, long-press Home → Widgets → Activity Trio.
 5. Long-press to resize. Tap a graph to open its interactive date details.
 
@@ -33,9 +34,9 @@ layout, remove and re-add only that home-screen widget.
 
 ## Widget behavior
 
-The combined widget stacks three full-year graphs in one panel, targeting 4 × 4
-launcher cells by default. Long-press to resize it. One weighted layout works in
-portrait and landscape on phones and tablets; cells stay square. The launcher
+The original combined widget stacks three full-year graphs in one panel, targeting
+4 × 4 launcher cells by default. Its layout is preserved for phones and already
+placed widgets. Cells stay square. The launcher
 controls the available space and resize steps. Tap a graph for readable dates and
 counts in the app; pinch to zoom or use Choose date.
 
@@ -50,6 +51,32 @@ Android battery restrictions can delay background jobs. Manual refresh has coold
 and server-limit backoff; removing every widget cancels the periodic job. The app
 works offline from its private cache. The tablet dashboard uses two columns and a
 full-width third graph; phone dashboard cards scroll normally.
+
+## Large merged widget on tablets
+
+Version 1.3.1 adds a fresh **All three — Tablet Large** provider for tablets. The
+existing phone merged layout and the GitHub, Codeforces and LeetCode individual
+widget layouts/sizing are unchanged. The large entry is offered by the app only
+at tablet sizes; it is hidden from the phone launcher picker.
+
+On your tablet, open Activity Trio → Add widget → **All three — Tablet Large**.
+Place it on a clear Home page, then remove only the old short merged widget.
+The new entry has a large 8 × 5-cell target with explicit minimum/maximum resize
+bounds. Launchers control the final grid span; the fallback minimum size is
+600 × 600dp so placement does not depend on stretching the old 4 × 2 entry.
+
+The large panel stacks platforms when tall and uses three columns when wide.
+Each full-year heatmap can wrap into consecutive bands of weeks to make its
+squares larger; all 365/366 dates are retained. Tap a graph for the app's usual
+interactive date view. Resize callbacks use their supplied new dimensions.
+
+Finish Home editing before long-pressing the placed widget to resize it. If your
+launcher shows no handles, check its Home screen layout-lock setting. An app can
+declare resize support and provide a large preset; it cannot force a launcher's
+resize UI to appear. The following tablet previews use synthetic data for documentation.
+
+<img src="docs/tablet-widget.png" alt="Large tablet merged widget in landscape" width="780">
+<img src="docs/tablet-large-portrait.png" alt="Large tablet merged widget in portrait" width="420">
 
 ## What the numbers mean
 
